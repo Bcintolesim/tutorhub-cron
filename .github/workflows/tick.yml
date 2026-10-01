@@ -1,0 +1,25 @@
+# This file does NOT belong in the main repo. It goes in a separate PUBLIC repo (tutorhub-cron),
+# at .github/workflows/tick.yml, because Actions minutes are free on public repos
+# and a cron every 5 min uses ~8,600 min per month (the free plan for private repos gives 2,000).
+#
+# Repo secrets (Settings > Secrets and variables > Actions):
+#   TICK_URL     https://YOUR-SERVICE.onrender.com/internal/tick
+#   CRON_SECRET  the same value as the CRON_SECRET variable on Render
+name: tick
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch: # "Run workflow" button to run it by hand during the demo
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Call the API tick
+        run: |
+          curl --fail-with-body --silent --show-error \
+            --retry 3 --retry-delay 20 --retry-all-errors --max-time 60 \
+            -X POST -H "X-Cron-Secret: ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.TICK_URL }}"
