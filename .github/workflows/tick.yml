@@ -2,6 +2,11 @@
 # at .github/workflows/tick.yml, because Actions minutes are free on public repos
 # and a cron every 5 min uses ~8,600 min per month (the free plan for private repos gives 2,000).
 #
+# cron-job.org is the primary cron (it calls the tick every 5 min on time). This workflow is the
+# backup: GitHub only runs scheduled workflows on a best-effort basis (in October 2026 the runs
+# arrived every 2 to 4 hours), but if cron-job.org stops, the queue still moves and an overdue job
+# still fails the run and sends an email. Running both at once is safe: the tick uses SKIP LOCKED.
+#
 # Repo secrets (Settings > Secrets and variables > Actions):
 #   TICK_URL     https://YOUR-SERVICE.onrender.com/internal/tick
 #   CRON_SECRET  the same value as the CRON_SECRET variable on Render

@@ -1,0 +1,32 @@
+# Goes in the tutorhub-cron repo, at .github/workflows/keepalive.yml (next to tick.yml).
+#
+# GitHub disables scheduled workflows of a public repo after 60 days without activity, and nobody
+# commits to tutorhub-cron. Once a week this workflow checks the date of the last commit and, if it
+# is older than 45 days, pushes an empty commit so the tick schedule is never switched off.
+name: keepalive
+
+on:
+  schedule:
+    - cron: '17 12 * * 1' # Mondays 12:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Empty commit if the repo has been quiet for 45 days
+        run: |
+          last=$(git log -1 --format=%ct)
+          age_days=$(( ($(date +%s) - last) / 86400 ))
+          echo "Last commit was $age_days days ago"
+          if [ "$age_days" -ge 45 ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit --allow-empty -m "chore: keep scheduled workflows active"
+            git push
+          fi
