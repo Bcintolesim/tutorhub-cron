@@ -10,15 +10,20 @@ on:
     - cron: '17 12 * * 1' # Mondays 12:17 UTC
   workflow_dispatch:
 
-permissions:
-  contents: write
+permissions: {}
 
 jobs:
   keepalive:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    # The only permission it needs: pushing the empty commit.
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v4
+      # The token stays in .git/config on purpose: the step below pushes with it.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: true # zizmor: ignore[artipacked]
       - name: Empty commit if the repo has been quiet for 45 days
         run: |
           last=$(git log -1 --format=%ct)
